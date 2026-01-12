@@ -56,8 +56,11 @@ function Pharmacy() {
             marginBottom: "10px",
             width: "600px",
             margin: "0 auto 20px",
-          }}
-        >
+            borderRadius: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
           <input
             type="text"
             placeholder="Medicine Name"
@@ -67,11 +70,20 @@ function Pharmacy() {
               updated[index].name = e.target.value;
               setMedicines(updated);
             }}
-            style={{ marginRight: "10px" }}
-          />
+            style={{margin: "0 15px 5px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "4px"}}/>
 
           <select
             value={med.time}
+            style={{margin: "0 15px 5px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "6px",
+                  width: "140px"}}
             onChange={(e) => {
               const updated = [...medicines];
               updated[index].time = e.target.value;
@@ -92,8 +104,12 @@ function Pharmacy() {
               updated[index].timesPerDay = e.target.value;
               setMedicines(updated);
             }}
-            style={{ marginLeft: "10px", width: "90px" }}
-          />
+            style={{margin: "0 15px 5px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "4px",
+                  width: "70px"}}/>
 
           <input
             type="number"
@@ -104,7 +120,12 @@ function Pharmacy() {
               updated[index].duration = e.target.value;
               setMedicines(updated);
             }}
-            style={{ marginLeft: "10px", width: "80px" }}
+            style={{margin: "0 15px 5px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "4px",
+                  width: "70px"}}
           />
         </div>
       ))}
