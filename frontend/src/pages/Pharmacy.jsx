@@ -132,28 +132,27 @@ function Pharmacy() {
       {/* STEP 4 ENDS HERE */}
 
       {/* Step 5: Add / Remove */}
-      <button class="btn btn-primary" type="submit"
+      <button className="btn btn-primary" type="submit"
         onClick={() =>
           setMedicines([
             ...medicines,
             { name: "", time: "Morning", timesPerDay: 1, duration: "" },
           ])
         }
-        style={{ marginRight: "10px" }}
-      >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-      <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+        style={{ marginRight: "10px" }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus-lg" viewBox="0 0 16 16">
+      <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
       </svg> Add Medicine
       </button>
 
-      <button class="btn btn-primary" type="submit"
+      <button className="btn btn-primary" type="submit"
         onClick={() => {
           if (medicines.length > 1) {
             setMedicines(medicines.slice(0, -1));
           }
         }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-dash" viewBox="0 0 16 16">
         <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
         </svg>
         Remove Last
@@ -161,7 +160,7 @@ function Pharmacy() {
 
       {/* Step 6 */}
       <div style={{ marginTop: "30px" }}>
-        <button class="btn btn-primary" type="submit" onClick={() => console.log(patientName, mobile, medicines)}>
+        <button className="btn btn-primary" type="submit" onClick={() => console.log(patientName, mobile, medicines)}>
           Generate Bill
         </button>
       </div>
