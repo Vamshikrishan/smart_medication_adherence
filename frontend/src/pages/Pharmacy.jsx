@@ -12,6 +12,7 @@ function Pharmacy() {
 
   return (
     <div style={{ padding: "30px", fontFamily: "Arial, sans-serif", textAlign: "center" }}>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" />
       <h2>Pharmacy Portal</h2>
 
       {/* Patient Details */}
@@ -21,16 +22,26 @@ function Pharmacy() {
           placeholder="Patient Name"
           value={patientName}
           onChange={(e) => setPatientName(e.target.value)}
-          style={{ display: "block", margin: "0 auto 10px", width: "300px", fontFamily: "Arial, sans-serif" }}
-        />
+          style={{display: "block",
+                  margin: "0 auto 10px",
+                  width: "300px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "4px"}}/>
 
         <input
           type="text"
           placeholder="Mobile Number"
           value={mobile}
           onChange={(e) => setMobile(e.target.value)}
-          style={{ display: "block", margin: "0 auto 20px", width: "300px", fontFamily: "Arial, sans-serif" }}
-        />
+          style={{display: "block",
+                  margin: "0 auto 10px",
+                  width: "300px",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid #8b8686a7",
+                  borderRadius: "5px",
+                  padding: "4px" }}/>
 
         {/* Medicines Section */}
       <h3>Medicines</h3>
@@ -43,7 +54,8 @@ function Pharmacy() {
             border: "1px solid #ccc",
             padding: "15px",
             marginBottom: "10px",
-            width: "500px",
+            width: "600px",
+            margin: "0 auto 20px",
           }}
         >
           <input
@@ -99,7 +111,7 @@ function Pharmacy() {
       {/* STEP 4 ENDS HERE */}
 
       {/* Step 5: Add / Remove */}
-      <button
+      <button class="btn btn-primary" type="submit"
         onClick={() =>
           setMedicines([
             ...medicines,
@@ -108,22 +120,27 @@ function Pharmacy() {
         }
         style={{ marginRight: "10px" }}
       >
-        + Add Medicine
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+      </svg> Add Medicine
       </button>
 
-      <button
+      <button class="btn btn-primary" type="submit"
         onClick={() => {
           if (medicines.length > 1) {
             setMedicines(medicines.slice(0, -1));
           }
         }}
       >
-        − Remove Last
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">
+        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+        </svg>
+        Remove Last
       </button>
 
       {/* Step 6 */}
       <div style={{ marginTop: "30px" }}>
-        <button onClick={() => console.log(patientName, mobile, medicines)}>
+        <button class="btn btn-primary" type="submit" onClick={() => console.log(patientName, mobile, medicines)}>
           Generate Bill
         </button>
       </div>
