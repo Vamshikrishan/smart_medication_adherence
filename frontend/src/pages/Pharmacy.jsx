@@ -31,7 +31,7 @@ function Pharmacy() {
                   padding: "4px"}}/>
 
         <input
-          type="text"
+          type="number"
           placeholder="Mobile Number"
           value={mobile}
           onChange={(e) => setMobile(e.target.value)}
