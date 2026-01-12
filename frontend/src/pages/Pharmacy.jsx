@@ -1,5 +1,11 @@
+import { useState } from "react";
+
 function Pharmacy() {
-  return <h2>Pharmacy Portal (Coming Soon)</h2>;
+  return (
+    <div style={{ padding: "30px" }}>
+      <h2>Pharmacy Portal</h2>
+    </div>
+  );
 }
 
 export default Pharmacy;
