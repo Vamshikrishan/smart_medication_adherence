@@ -11,28 +11,28 @@ function Pharmacy() {
   ]);
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div style={{ padding: "30px", fontFamily: "Arial, sans-serif", textAlign: "center" }}>
       <h2>Pharmacy Portal</h2>
 
       {/* Patient Details */}
-      <h3>Patient Details</h3>
-      <input
-        type="text"
-        placeholder="Patient Name"
-        value={patientName}
-        onChange={(e) => setPatientName(e.target.value)}
-        style={{ display: "block", marginBottom: "10px", width: "300px" }}
-      />
+        <h3>Patient Details</h3>
+        <input
+          type="text"
+          placeholder="Patient Name"
+          value={patientName}
+          onChange={(e) => setPatientName(e.target.value)}
+          style={{ display: "block", margin: "0 auto 10px", width: "300px", fontFamily: "Arial, sans-serif" }}
+        />
 
-      <input
-        type="text"
-        placeholder="Mobile Number"
-        value={mobile}
-        onChange={(e) => setMobile(e.target.value)}
-        style={{ display: "block", marginBottom: "20px", width: "300px" }}
-      />
+        <input
+          type="text"
+          placeholder="Mobile Number"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          style={{ display: "block", margin: "0 auto 20px", width: "300px", fontFamily: "Arial, sans-serif" }}
+        />
 
-      {/* Medicines Section */}
+        {/* Medicines Section */}
       <h3>Medicines</h3>
 
       {/* STEP 4 STARTS HERE */}
