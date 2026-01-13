@@ -161,7 +161,7 @@ function Pharmacy() {
             {/* Step 6 */}
       <button
   onClick={async () => {
-    const response = await fetch("http://localhost:5000/api/prescriptions", {
+    const response = await fetch("https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
