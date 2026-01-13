@@ -159,27 +159,28 @@ function Pharmacy() {
       </button>
 
             {/* Step 6 */}
-      <div style={{ marginTop: "30px" }}>
-        <button className="btn btn-primary" type="submit" onClick={() => {
-          // Validate patient details
-          if (!patientName.trim() || !mobile.trim()) {
-            alert("Please fill in patient name and mobile number");
-            return;
-          }
-          // Validate all medicine fields
-          for (let med of medicines) {
-            if (!med.name.trim() || !med.time.trim() || med.timesPerDay === "" || med.duration === "") {
-              alert("Please fill all medicine fields");
-              return;
-            }
-          }
-          // If all validations pass, generate bill
-          console.log(patientName, mobile, medicines);
-          // Add bill generation logic here
-        }}>
-          Generate Bill
-        </button>
-      </div>
+      <button
+  onClick={async () => {
+    const response = await fetch("http://localhost:5000/api/prescriptions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        patientName,
+        mobile,
+        medicines,
+      }),
+    });
+
+    const data = await response.json();
+    console.log(data);
+    alert("Prescription ID: " + data.prescriptionId);
+  }}
+>
+  Generate Bill
+</button>
+
     </div>
   );
 }
