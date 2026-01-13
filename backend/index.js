@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const PORT = 5000;
 
-// Middleware
+// CORS (FIXED)
 app.use(
   cors({
     origin: "*",
@@ -14,9 +14,10 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.options("*", cors());
+app.options("/*", cors());
 
+// Middleware
+app.use(express.json());
 
 // Test route
 app.get("/", (req, res) => {
@@ -26,7 +27,6 @@ app.get("/", (req, res) => {
 // Create prescription API
 app.post("/api/prescriptions", (req, res) => {
   const prescriptionData = req.body;
-
   const prescriptionId = uuidv4();
 
   res.json({
