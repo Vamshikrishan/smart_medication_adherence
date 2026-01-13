@@ -159,28 +159,26 @@ function Pharmacy() {
       </button>
 
             {/* Step 6 */}
-      <button
-  onClick={async () => {
-    const response = await fetch("https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        patientName,
-        mobile,
-        medicines,
-      }),
-    });
+          <button
+      onClick={async () => {
+        const response = await fetch("https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            patientName,
+            mobile,
+            medicines,
+          }),
+        });
 
-    const data = await response.json();
-    console.log(data);
-    alert("Prescription ID: " + data.prescriptionId);
-  }}
->
-  Generate Bill
-</button>
-
+        const data = await response.json();
+        console.log(data);
+        alert("Prescription ID: " + data.prescriptionId);
+      }}>
+      Generate Bill
+    </button>
     </div>
   );
 }
