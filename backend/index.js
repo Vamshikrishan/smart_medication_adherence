@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const PORT = 5000;
 
-// CORS (FIXED)
+// ✅ Correct CORS (ENOUGH, no app.options needed)
 app.use(
   cors({
     origin: "*",
@@ -13,8 +13,6 @@ app.use(
     allowedHeaders: ["Content-Type"],
   })
 );
-
-app.options("/*", cors());
 
 // Middleware
 app.use(express.json());
