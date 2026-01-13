@@ -6,8 +6,17 @@ const app = express();
 const PORT = 5000;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
 app.use(express.json());
+app.options("*", cors());
+
 
 // Test route
 app.get("/", (req, res) => {
