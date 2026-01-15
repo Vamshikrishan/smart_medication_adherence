@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 function Pharmacy() {
   // Patient state
   const [patientName, setPatientName] = useState("");
@@ -10,59 +11,74 @@ function Pharmacy() {
     { name: "", time: "Morning", timesPerDay: 1, duration: "" },
   ]);
 
+  // ✅ Generate Bill handler
+  const handleGenerateBill = async () => {
+    const response = await fetch(
+      "https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientName,
+          mobile,
+          medicines,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(data);
+
+    alert("Prescription ID: " + data.prescriptionId);
+
+    // 🔥 THIS WAS MISSING
+    setQrCode(data.qrCode);
+  };
+
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial, sans-serif", textAlign: "center" }}>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" />
+    <div style={{ padding: "30px", fontFamily: "Arial", textAlign: "center" }}>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      />
+
       <h2>Pharmacy Portal</h2>
 
-      {/* Patient Details */}
-        <h3>Patient Details</h3>
-        <input
-          type="text"
-          placeholder="Patient Name"
-          value={patientName}
-          onChange={(e) => setPatientName(e.target.value)}
-          style={{display: "block",
-                  margin: "0 auto 10px",
-                  width: "300px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "4px"}}/>
+      <h3>Patient Details</h3>
+      <input
+        type="text"
+        placeholder="Patient Name"
+        value={patientName}
+        onChange={(e) => setPatientName(e.target.value)}
+        style={{ display: "block", margin: "0 auto 10px", width: "300px" }}
+      />
 
-        <input
-          type="number"
-          placeholder="Mobile Number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          style={{display: "block",
-                  margin: "0 auto 10px",
-                  width: "300px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "4px" }}/>
+      <input
+        type="number"
+        placeholder="Mobile Number"
+        value={mobile}
+        onChange={(e) => setMobile(e.target.value)}
+        style={{ display: "block", margin: "0 auto 20px", width: "300px" }}
+      />
 
-        {/* Medicines Section */}
       <h3>Medicines</h3>
 
-      {/* STEP 4 STARTS HERE */}
       {medicines.map((med, index) => (
         <div
           key={index}
           style={{
             border: "1px solid #ccc",
             padding: "15px",
-            marginBottom: "10px",
+            margin: "0 auto 15px",
             width: "600px",
-            margin: "0 auto 20px",
-            borderRadius: "5px",
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
-          }}>
+            gap: "10px",
+          }}
+        >
           <input
-            type="text"
             placeholder="Medicine Name"
             value={med.name}
             onChange={(e) => {
@@ -70,20 +86,10 @@ function Pharmacy() {
               updated[index].name = e.target.value;
               setMedicines(updated);
             }}
-            style={{margin: "0 15px 5px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "4px"}}/>
+          />
 
           <select
             value={med.time}
-            style={{margin: "0 15px 5px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "6px",
-                  width: "140px"}}
             onChange={(e) => {
               const updated = [...medicines];
               updated[index].time = e.target.value;
@@ -104,12 +110,8 @@ function Pharmacy() {
               updated[index].timesPerDay = e.target.value;
               setMedicines(updated);
             }}
-            style={{margin: "0 15px 5px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "4px",
-                  width: "70px"}}/>
+            style={{ width: "80px" }}
+          />
 
           <input
             type="number"
@@ -120,72 +122,56 @@ function Pharmacy() {
               updated[index].duration = e.target.value;
               setMedicines(updated);
             }}
-            style={{margin: "0 15px 5px",
-                  fontFamily: "Arial, sans-serif",
-                  border: "1px solid #8b8686a7",
-                  borderRadius: "5px",
-                  padding: "4px",
-                  width: "70px"}}
+            style={{ width: "80px" }}
           />
         </div>
       ))}
-      {/* STEP 4 ENDS HERE */}
 
-      {/* Step 5: Add / Remove */}
-      <button className="btn btn-primary" type="submit"
+      <button
+        type="button"
+        className="btn btn-primary"
         onClick={() =>
           setMedicines([
             ...medicines,
             { name: "", time: "Morning", timesPerDay: 1, duration: "" },
           ])
         }
-        style={{ marginRight: "10px" }}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus-lg" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-      </svg> Add Medicine
+        style={{ marginRight: "10px" }}
+      >
+        + Add Medicine
       </button>
 
-      <button className="btn btn-primary" type="submit"
+      <button
+        type="button"
+        className="btn btn-primary"
         onClick={() => {
           if (medicines.length > 1) {
             setMedicines(medicines.slice(0, -1));
           }
         }}
+        style={{ marginRight: "10px" }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-dash" viewBox="0 0 16 16">
-        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
-        </svg>
-        Remove Last
+        − Remove Last
       </button>
 
-            {/* Step 6 */}
-          <button
-      onClick={async () => {
-        const response = await fetch("https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            patientName,
-            mobile,
-            medicines,
-          }),
-        });
+      <br />
+      <br />
 
-        const data = await response.json();
-        console.log(data);
-        alert("Prescription ID: " + data.prescriptionId);
-      }}>
-      Generate Bill
-    </button>
-    {qrCode && (
-  <div style={{ marginTop: "20px", textAlign: "center" }}>
-    <h4>Scan this QR Code</h4>
-    <img src={qrCode} alt="Prescription QR Code" />
-  </div>
-)}
+      <button
+        type="button"
+        className="btn btn-success"
+        onClick={handleGenerateBill}
+      >
+        Generate Bill
+      </button>
 
+      {/* ✅ QR CODE DISPLAY */}
+      {qrCode && (
+        <div style={{ marginTop: "25px" }}>
+          <h4>Scan this QR Code</h4>
+          <img src={qrCode} alt="Prescription QR" />
+        </div>
+      )}
     </div>
   );
 }
