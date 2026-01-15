@@ -1,9 +1,9 @@
 import { useState } from "react";
-
 function Pharmacy() {
   // Patient state
   const [patientName, setPatientName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [qrCode, setQrCode] = useState("");
 
   // Medicines state
   const [medicines, setMedicines] = useState([
@@ -179,6 +179,13 @@ function Pharmacy() {
       }}>
       Generate Bill
     </button>
+    {qrCode && (
+  <div style={{ marginTop: "20px", textAlign: "center" }}>
+    <h4>Scan this QR Code</h4>
+    <img src={qrCode} alt="Prescription QR Code" />
+  </div>
+)}
+
     </div>
   );
 }

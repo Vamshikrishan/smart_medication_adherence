@@ -1,3 +1,4 @@
+const QRCode = require("qrcode");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -16,43 +17,9 @@ app.use(
 );
 app.use(express.json());
 
-// Routes
-app.get("/", (req, res) => {
-  res.send("Backend is running");
-});
-
-app.post("/api/prescriptions", (req, res) => {
-  const prescriptionId = uuidv4();
-  res.json({
-    message: "Prescription created successfully",
-    prescriptionId,
-  });
-});
-
-// 🔥 START SERVER ONLY AFTER DB CONNECTS
-async function startServer() {
-  try {
-    console.log("⏳ Connecting to MongoDB...");
-
-    await mongoose.connect(
-      "mongodb+srv://vamship250106_db_user:aUQob0DczLPN5gdr@cluster0.jzucuh6.mongodb.net/medicationDB",
-      {
-        serverSelectionTimeoutMS: 5000, // IMPORTANT
-      }
-    );
-
-    console.log("✅ MongoDB connected");
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ MongoDB connection failed:");
-    console.error(error.message);
-    process.exit(1); // stop server if DB fails
-  }
-}
-
+/* =======================
+   MongoDB Schema & Model
+   ======================= */
 const PrescriptionSchema = new mongoose.Schema({
   prescriptionId: String,
   patientName: String,
@@ -65,5 +32,67 @@ const PrescriptionSchema = new mongoose.Schema({
 });
 
 const Prescription = mongoose.model("Prescription", PrescriptionSchema);
+
+/* =======================
+   Routes
+   ======================= */
+app.get("/", (req, res) => {
+  res.send("Backend is running");
+});
+
+app.post("/api/prescriptions", async (req, res) => {
+  try {
+    const { patientName, mobile, medicines } = req.body;
+    const prescriptionId = uuidv4();
+
+    // Save data to MongoDB
+    const prescription = new Prescription({
+      prescriptionId,
+      patientName,
+      mobile,
+      medicines,
+    });
+
+    await prescription.save();
+
+    // Generate QR code
+    const qrCode = await QRCode.toDataURL(prescriptionId);
+
+    res.json({
+      message: "Prescription saved successfully",
+      prescriptionId,
+      qrCode,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create prescription" });
+  }
+});
+
+/* =======================
+   Start Server After DB
+   ======================= */
+async function startServer() {
+  try {
+    console.log("⏳ Connecting to MongoDB...");
+
+    await mongoose.connect(
+      "mongodb+srv://vamship250106_db_user:aUQob0DczLPN5gdr@cluster0.jzucuh6.mongodb.net/medicationDB",
+      {
+        serverSelectionTimeoutMS: 5000,
+      }
+    );
+
+    console.log("✅ MongoDB connected");
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:");
+    console.error(error.message);
+    process.exit(1);
+  }
+}
 
 startServer();
