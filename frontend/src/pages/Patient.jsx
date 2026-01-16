@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 function Patient() {
   const [prescriptionId, setPrescriptionId] = useState("");
   const [prescription, setPrescription] = useState(null);
   const [error, setError] = useState("");
 
-  // ✅ Fetch prescription from backend
-  const fetchPrescription = async () => {
+  const fetchPrescription = async (id) => {
     try {
       setError("");
       setPrescription(null);
 
       const response = await fetch(
-        `https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions/${prescriptionId}`
+        `https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions/${id}`
       );
 
       if (!response.ok) {
@@ -26,35 +26,52 @@ function Patient() {
     }
   };
 
+  useEffect(() => {
+    const scanner = new Html5QrcodeScanner(
+      "qr-reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(
+      (decodedText) => {
+        scanner.clear();
+        setPrescriptionId(decodedText);
+        fetchPrescription(decodedText);
+      },
+      (err) => {
+        // ignore scan errors
+      }
+    );
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, []);
+
   return (
     <div style={{ padding: "30px", textAlign: "center" }}>
       <h2>Patient Portal</h2>
-
       <p>Scan the QR code provided by the pharmacy</p>
 
-      <input
-        type="text"
-        placeholder="Prescription ID"
-        value={prescriptionId}
-        onChange={(e) => setPrescriptionId(e.target.value)}
-        style={{ width: "400px", padding: "8px" }}
-      />
+      {/* QR Scanner */}
+      <div
+        id="qr-reader"
+        style={{ width: "300px", margin: "0 auto" }}
+      ></div>
 
-      <br />
-      <br />
+      {prescriptionId && (
+        <p style={{ marginTop: "15px" }}>
+          <strong>Prescription ID:</strong> {prescriptionId}
+        </p>
+      )}
 
-      <button onClick={fetchPrescription}>
-        Load Prescription
-      </button>
-
-      {/* Error message */}
       {error && (
         <p style={{ color: "red", marginTop: "15px" }}>
           {error}
         </p>
       )}
 
-      {/* Prescription display */}
       {prescription && (
         <div style={{ marginTop: "20px" }}>
           <h3>Medicines</h3>
