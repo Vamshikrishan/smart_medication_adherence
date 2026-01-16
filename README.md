@@ -16,3 +16,6 @@ This project proposes a QR-based digital medication adherence system integrated 
 - Frontend: React
 - Backend: Node.js, Express
 - Database: MongoDB
+
+run frontend: npm run dev
+run backend: node index.js
