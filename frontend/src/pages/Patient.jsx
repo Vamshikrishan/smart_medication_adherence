@@ -26,7 +26,6 @@ function Patient() {
   };
 
   useEffect(() => {
-    // Prevent duplicate scanner
     if (isScanningRef.current) return;
     isScanningRef.current = true;
 
@@ -38,10 +37,11 @@ function Patient() {
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
-          // ✅ STOP CAMERA IMMEDIATELY
+          // ✅ Stop camera immediately after scan
           await html5QrCode.stop();
           await html5QrCode.clear();
 
+          qrCodeRef.current = null;
           isScanningRef.current = false;
 
           setPrescriptionId(decodedText);
@@ -67,7 +67,7 @@ function Patient() {
       <h2>Patient Portal</h2>
       <p>Scan the QR code provided by the pharmacy</p>
 
-      {/* QR Camera */}
+      {/* Camera Scanner */}
       <div
         id="qr-reader"
         style={{ width: "300px", margin: "0 auto" }}
@@ -79,7 +79,11 @@ function Patient() {
         </p>
       )}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && (
+        <p style={{ color: "red", marginTop: "10px" }}>
+          {error}
+        </p>
+      )}
 
       {prescription && (
         <div style={{ marginTop: "20px" }}>
