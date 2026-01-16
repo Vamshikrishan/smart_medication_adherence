@@ -69,6 +69,22 @@ app.post("/api/prescriptions", async (req, res) => {
   }
 });
 
+app.get("/api/prescriptions/:id", async (req, res) => {
+  try {
+    const prescription = await Prescription.findOne({
+      prescriptionId: req.params.id,
+    });
+
+    if (!prescription) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+
+    res.json(prescription);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch prescription" });
+  }
+});
+
 /* =======================
    Start Server After DB
    ======================= */

@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Pharmacy from "./pages/Pharmacy";
 import Patient from "./pages/Patient";
 
+
 function App() {
   return (
     <BrowserRouter>
