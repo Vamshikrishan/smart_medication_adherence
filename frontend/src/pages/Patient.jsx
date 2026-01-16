@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 function Patient() {
@@ -6,18 +6,16 @@ function Patient() {
   const [prescription, setPrescription] = useState(null);
   const [error, setError] = useState("");
 
+  const scannerRef = useRef(null); // ⭐ VERY IMPORTANT
+
   const fetchPrescription = async (id) => {
     try {
       setError("");
-      setPrescription(null);
-
       const response = await fetch(
         `https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions/${id}`
       );
 
-      if (!response.ok) {
-        throw new Error("Prescription not found");
-      }
+      if (!response.ok) throw new Error("Prescription not found");
 
       const data = await response.json();
       setPrescription(data);
@@ -27,25 +25,35 @@ function Patient() {
   };
 
   useEffect(() => {
+    // 🔒 Prevent multiple scanners
+    if (scannerRef.current) return;
+
     const scanner = new Html5QrcodeScanner(
       "qr-reader",
       { fps: 10, qrbox: 250 },
       false
     );
 
+    scannerRef.current = scanner;
+
     scanner.render(
       (decodedText) => {
-        scanner.clear();
+        // ✅ Stop scanner AFTER successful scan
+        scanner.clear().then(() => {
+          scannerRef.current = null;
+        });
+
         setPrescriptionId(decodedText);
         fetchPrescription(decodedText);
       },
-      (err) => {
-        // ignore scan errors
-      }
+      () => {} // ignore scan errors
     );
 
     return () => {
-      scanner.clear().catch(() => {});
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {});
+        scannerRef.current = null;
+      }
     };
   }, []);
 
@@ -66,11 +74,7 @@ function Patient() {
         </p>
       )}
 
-      {error && (
-        <p style={{ color: "red", marginTop: "15px" }}>
-          {error}
-        </p>
-      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {prescription && (
         <div style={{ marginTop: "20px" }}>
