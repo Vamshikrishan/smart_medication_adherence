@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 
 function Patient() {
   const [prescriptionId, setPrescriptionId] = useState("");
   const [prescription, setPrescription] = useState(null);
   const [error, setError] = useState("");
 
-  const scannerRef = useRef(null); // ⭐ VERY IMPORTANT
+  const qrCodeRef = useRef(null);
+  const isScanningRef = useRef(false);
 
   const fetchPrescription = async (id) => {
     try {
@@ -25,34 +26,38 @@ function Patient() {
   };
 
   useEffect(() => {
-    // 🔒 Prevent multiple scanners
-    if (scannerRef.current) return;
+    // Prevent duplicate scanner
+    if (isScanningRef.current) return;
+    isScanningRef.current = true;
 
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    qrCodeRef.current = html5QrCode;
 
-    scannerRef.current = scanner;
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        async (decodedText) => {
+          // ✅ STOP CAMERA IMMEDIATELY
+          await html5QrCode.stop();
+          await html5QrCode.clear();
 
-    scanner.render(
-      (decodedText) => {
-        // ✅ Stop scanner AFTER successful scan
-        scanner.clear().then(() => {
-          scannerRef.current = null;
-        });
+          isScanningRef.current = false;
 
-        setPrescriptionId(decodedText);
-        fetchPrescription(decodedText);
-      },
-      () => {} // ignore scan errors
-    );
+          setPrescriptionId(decodedText);
+          fetchPrescription(decodedText);
+        }
+      )
+      .catch(() => {
+        isScanningRef.current = false;
+      });
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
-        scannerRef.current = null;
+      if (qrCodeRef.current) {
+        qrCodeRef.current.stop().catch(() => {});
+        qrCodeRef.current.clear().catch(() => {});
+        qrCodeRef.current = null;
+        isScanningRef.current = false;
       }
     };
   }, []);
@@ -62,7 +67,7 @@ function Patient() {
       <h2>Patient Portal</h2>
       <p>Scan the QR code provided by the pharmacy</p>
 
-      {/* QR Scanner */}
+      {/* QR Camera */}
       <div
         id="qr-reader"
         style={{ width: "300px", margin: "0 auto" }}
