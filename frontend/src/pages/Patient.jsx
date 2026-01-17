@@ -8,9 +8,10 @@ function Patient() {
 
   const qrCodeRef = useRef(null);
   const isScanningRef = useRef(false);
+  const reminderTimers = useRef([]); // ✅ IMPORTANT
 
   /* ===============================
-     FETCH PRESCRIPTION FROM BACKEND
+     FETCH PRESCRIPTION
      =============================== */
   const fetchPrescription = async (id) => {
     try {
@@ -26,8 +27,7 @@ function Patient() {
 
       const data = await response.json();
       setPrescription(data);
-
-      return data; // ✅ VERY IMPORTANT
+      return data;
     } catch (err) {
       setError(err.message);
       return null;
@@ -35,42 +35,36 @@ function Patient() {
   };
 
   /* ===============================
-     REMINDER LOGIC
+     REMINDER SYSTEM
      =============================== */
   const scheduleReminders = (medicines) => {
-    medicines.forEach((med) => {
-      const timeMap = {
-        Morning: 8,
-        Afternoon: 13,
-        Night: 20,
-      };
+    medicines.forEach((med, index) => {
+      // ⏱ test delay (5 sec, 8 sec, 11 sec...)
+      const delay = 5000 + index * 3000;
 
-      const hour = timeMap[med.time];
-      const now = new Date();
+      console.log("⏰ Reminder scheduled:", med.name);
 
-      const reminder = new Date();
-      reminder.setHours(hour, 0, 0, 0);
+      const timer = setTimeout(() => {
+        console.log("🔔 Reminder fired:", med.name);
 
-      if (reminder < now) {
-        reminder.setDate(reminder.getDate() + 1);
-      }
-
-      const delay = reminder - now;
-
-      setTimeout(() => {
-        // 🔔 Notification
+        // Notification
         if (Notification.permission === "granted") {
           new Notification("💊 Medication Reminder", {
             body: `Time to take ${med.name}`,
           });
+        } else {
+          alert(`Time to take ${med.name}`);
         }
 
-        // 🔊 Voice alert
+        // Voice
         const speech = new SpeechSynthesisUtterance(
           `Please take your medicine ${med.name}`
         );
         speechSynthesis.speak(speech);
+
       }, delay);
+
+      reminderTimers.current.push(timer);
     });
   };
 
@@ -98,7 +92,6 @@ function Patient() {
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
-          // 🛑 stop camera immediately
           await html5QrCode.stop();
           await html5QrCode.clear();
 
@@ -109,7 +102,7 @@ function Patient() {
 
           const data = await fetchPrescription(decodedText);
 
-          if (data && data.medicines) {
+          if (data?.medicines) {
             scheduleReminders(data.medicines);
           }
         }
@@ -122,9 +115,10 @@ function Patient() {
       if (qrCodeRef.current) {
         qrCodeRef.current.stop().catch(() => {});
         qrCodeRef.current.clear().catch(() => {});
-        qrCodeRef.current = null;
-        isScanningRef.current = false;
       }
+
+      // 🧹 clear timers
+      reminderTimers.current.forEach(clearTimeout);
     };
   }, []);
 
@@ -139,10 +133,10 @@ function Patient() {
       <div
         id="qr-reader"
         style={{ width: "300px", margin: "0 auto" }}
-      ></div>
+      />
 
       {prescriptionId && (
-        <p style={{ marginTop: "15px" }}>
+        <p>
           <strong>Prescription ID:</strong> {prescriptionId}
         </p>
       )}
