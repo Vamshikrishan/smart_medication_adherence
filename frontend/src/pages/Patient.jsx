@@ -9,22 +9,83 @@ function Patient() {
   const qrCodeRef = useRef(null);
   const isScanningRef = useRef(false);
 
+  /* ===============================
+     FETCH PRESCRIPTION FROM BACKEND
+     =============================== */
   const fetchPrescription = async (id) => {
     try {
       setError("");
+
       const response = await fetch(
         `https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions/${id}`
       );
 
-      if (!response.ok) throw new Error("Prescription not found");
+      if (!response.ok) {
+        throw new Error("Prescription not found");
+      }
 
       const data = await response.json();
       setPrescription(data);
+
+      return data; // ✅ VERY IMPORTANT
     } catch (err) {
       setError(err.message);
+      return null;
     }
   };
 
+  /* ===============================
+     REMINDER LOGIC
+     =============================== */
+  const scheduleReminders = (medicines) => {
+    medicines.forEach((med) => {
+      const timeMap = {
+        Morning: 8,
+        Afternoon: 13,
+        Night: 20,
+      };
+
+      const hour = timeMap[med.time];
+      const now = new Date();
+
+      const reminder = new Date();
+      reminder.setHours(hour, 0, 0, 0);
+
+      if (reminder < now) {
+        reminder.setDate(reminder.getDate() + 1);
+      }
+
+      const delay = reminder - now;
+
+      setTimeout(() => {
+        // 🔔 Notification
+        if (Notification.permission === "granted") {
+          new Notification("💊 Medication Reminder", {
+            body: `Time to take ${med.name}`,
+          });
+        }
+
+        // 🔊 Voice alert
+        const speech = new SpeechSynthesisUtterance(
+          `Please take your medicine ${med.name}`
+        );
+        speechSynthesis.speak(speech);
+      }, delay);
+    });
+  };
+
+  /* ===============================
+     NOTIFICATION PERMISSION
+     =============================== */
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  /* ===============================
+     QR SCANNER
+     =============================== */
   useEffect(() => {
     if (isScanningRef.current) return;
     isScanningRef.current = true;
@@ -37,7 +98,7 @@ function Patient() {
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
-          // ✅ Stop camera immediately after scan
+          // 🛑 stop camera immediately
           await html5QrCode.stop();
           await html5QrCode.clear();
 
@@ -45,7 +106,12 @@ function Patient() {
           isScanningRef.current = false;
 
           setPrescriptionId(decodedText);
-          fetchPrescription(decodedText);
+
+          const data = await fetchPrescription(decodedText);
+
+          if (data && data.medicines) {
+            scheduleReminders(data.medicines);
+          }
         }
       )
       .catch(() => {
@@ -62,12 +128,14 @@ function Patient() {
     };
   }, []);
 
+  /* ===============================
+     UI
+     =============================== */
   return (
     <div style={{ padding: "30px", textAlign: "center" }}>
       <h2>Patient Portal</h2>
       <p>Scan the QR code provided by the pharmacy</p>
 
-      {/* Camera Scanner */}
       <div
         id="qr-reader"
         style={{ width: "300px", margin: "0 auto" }}
@@ -79,18 +147,15 @@ function Patient() {
         </p>
       )}
 
-      {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
-          {error}
-        </p>
-      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {prescription && (
         <div style={{ marginTop: "20px" }}>
           <h3>Medicines</h3>
+
           {prescription.medicines.map((med, index) => (
             <p key={index}>
-              <strong>{med.name}</strong> – {med.time} –{" "}
+              <strong>{med.name}</strong> — {med.time} —{" "}
               {med.timesPerDay} times/day for {med.duration} days
             </p>
           ))}
