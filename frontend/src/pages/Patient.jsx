@@ -3,142 +3,134 @@ import { Html5Qrcode } from "html5-qrcode";
 
 function Patient() {
   const [prescription, setPrescription] = useState(null);
-  const [activeReminder, setActiveReminder] = useState(null);
+  const [activeAlert, setActiveAlert] = useState(null);
 
   const qrRef = useRef(null);
-  const reminderInterval = useRef(null);
-  const voiceInterval = useRef(null);
+  const scanOnce = useRef(false);
+  const alarmInterval = useRef(null);
+  const engineInterval = useRef(null);
 
-  /* ============================
+  /* ===============================
      FETCH PRESCRIPTION
-     ============================ */
+  =============================== */
   const fetchPrescription = async (id) => {
     const res = await fetch(
       `https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions/${id}`
     );
+
     const data = await res.json();
     setPrescription(data);
     return data;
   };
 
-  /* ============================
-     MULTI LANGUAGE VOICE
-     ============================ */
-  const speak = (medicine, time) => {
+  /* ===============================
+     VOICE ENGINE
+  =============================== */
+  const speak = (text, lang) => {
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = 0.9;
+    msg.volume = 1;
+    speechSynthesis.speak(msg);
+  };
+
+  const speakAllLanguages = (medicine, time) => {
+    speak(
+      `It is time to take your medicine ${medicine} at ${time}`,
+      "en-IN"
+    );
+
+    speak(
+      `अब ${medicine} दवा लेने का समय हो गया है`,
+      "hi-IN"
+    );
+
+    speak(
+      `ఇప్పుడు ${medicine} మందు తీసుకునే సమయం వచ్చింది`,
+      "te-IN"
+    );
+  };
+
+  /* ===============================
+     START ALARM
+  =============================== */
+  const startAlarm = (medicine, time) => {
+    if (alarmInterval.current) return;
+
+    setActiveAlert({ medicine, time });
+
+    speakAllLanguages(medicine, time);
+
+    alarmInterval.current = setInterval(() => {
+      speakAllLanguages(medicine, time);
+    }, 15000); // repeat every 15 sec
+  };
+
+  const stopAlarm = () => {
+    clearInterval(alarmInterval.current);
+    alarmInterval.current = null;
     speechSynthesis.cancel();
-
-    const en = new SpeechSynthesisUtterance(
-      `It is ${time}. Time to take your medicine ${medicine}`
-    );
-    en.lang = "en-IN";
-
-    const hi = new SpeechSynthesisUtterance(
-      `अब ${time} हो गए हैं। कृपया ${medicine} दवा लें।`
-    );
-    hi.lang = "hi-IN";
-
-    const te = new SpeechSynthesisUtterance(
-      `ఇప్పుడు ${time} అయ్యింది. దయచేసి ${medicine} మందు తీసుకోండి.`
-    );
-    te.lang = "te-IN";
-
-    speechSynthesis.speak(en);
-    speechSynthesis.speak(hi);
-    speechSynthesis.speak(te);
+    setActiveAlert(null);
   };
 
-  /* ============================
-     START ALERT
-     ============================ */
-  const startAlert = (med) => {
-    setActiveReminder(med);
-
-    if (Notification.permission === "granted") {
-      new Notification("💊 Medication Reminder", {
-        body: `Time to take ${med.name}`,
-      });
-    }
-
-    speak(med.name, med.time);
-
-    voiceInterval.current = setInterval(() => {
-      speak(med.name, med.time);
-    }, 20000);
-  };
-
-  /* ============================
-     STOP ALERT
-     ============================ */
-  const stopAlert = () => {
-    clearInterval(voiceInterval.current);
-    speechSynthesis.cancel();
-    setActiveReminder(null);
-  };
-
-  /* ============================
-     TIME MATCH LOGIC
-     ============================ */
-  const startTimeTracker = (medicines) => {
-    reminderInterval.current = setInterval(() => {
+  /* ===============================
+     SMART REMINDER ENGINE
+  =============================== */
+  const startReminderEngine = (medicines) => {
+    engineInterval.current = setInterval(() => {
       const now = new Date();
 
-      const currentTime = now
-        .toLocaleTimeString("en-IN", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        })
-        .replace(" ", "");
+      const currentDate = now.toISOString().split("T")[0];
+      const currentTime =
+        now.getHours().toString().padStart(2, "0") +
+        ":" +
+        now.getMinutes().toString().padStart(2, "0");
 
       medicines.forEach((med) => {
-        const startDate = new Date(med.createdAt || prescription.createdAt);
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + Number(med.duration));
-
-        if (now > endDate) return;
-
         if (
-          currentTime === med.time.replace(" ", "") &&
-          !activeReminder
+          currentDate >= med.startDate &&
+          currentDate <= med.endDate &&
+          currentTime === med.reminderTime
         ) {
-          startAlert(med);
+          startAlarm(med.name, med.reminderTime);
         }
       });
-    }, 60000); // check every minute
+    }, 30000); // every 30 sec
   };
 
-  /* ============================
-     QR SCAN
-     ============================ */
+  /* ===============================
+     QR SCANNER
+  =============================== */
   useEffect(() => {
-    const scanner = new Html5Qrcode("qr-reader");
+    if (scanOnce.current) return;
+    scanOnce.current = true;
 
-    scanner.start(
+    const qr = new Html5Qrcode("qr-reader");
+    qrRef.current = qr;
+
+    qr.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
       async (decodedText) => {
-        await scanner.stop();
-        await scanner.clear();
+        await qr.stop();
+        await qr.clear();
 
         const data = await fetchPrescription(decodedText);
-        startTimeTracker(data.medicines);
+        startReminderEngine(data.medicines);
       }
     );
 
-    qrRef.current = scanner;
-
     return () => {
-      if (qrRef.current) qrRef.current.stop().catch(() => {});
-      clearInterval(reminderInterval.current);
-      clearInterval(voiceInterval.current);
+      if (engineInterval.current)
+        clearInterval(engineInterval.current);
     };
   }, []);
 
-  /* ============================
+  /* ===============================
      UI
-     ============================ */
+  =============================== */
   return (
-    <div style={{ textAlign: "center", padding: 30 }}>
+    <div style={{ padding: 30, textAlign: "center" }}>
       <h2>Patient Portal</h2>
       <p>Scan QR provided by pharmacy</p>
 
@@ -149,38 +141,44 @@ function Patient() {
           <h3>Medicines</h3>
           {prescription.medicines.map((m, i) => (
             <p key={i}>
-              {m.name} — {m.time} — {m.duration} days
+              <b>{m.name}</b> — {m.reminderTime} —{" "}
+              {m.duration} days
             </p>
           ))}
         </>
       )}
 
-      {activeReminder && (
+      {/* 🔔 ALERT PANEL */}
+      {activeAlert && (
         <div
           style={{
-            marginTop: 30,
-            background: "#ffe6e6",
+            background: "#ffcccc",
             padding: 25,
-            borderRadius: 10,
-            border: "2px solid red",
+            marginTop: 30,
+            borderRadius: 12,
           }}
         >
-          <h2>⏰ MEDICATION ALERT</h2>
-          <h3>{activeReminder.name}</h3>
-          <p>Time: {activeReminder.time}</p>
+          <h2>💊 MEDICATION ALERT</h2>
+
+          <h3>
+            Take <b>{activeAlert.medicine}</b>
+          </h3>
+
+          <h3>Time: {activeAlert.time}</h3>
 
           <button
-            onClick={stopAlert}
+            onClick={stopAlarm}
             style={{
+              padding: 12,
+              fontSize: 18,
               background: "red",
               color: "white",
-              padding: "12px 30px",
-              fontSize: 18,
               border: "none",
-              borderRadius: 8,
+              borderRadius: 6,
+              marginTop: 15,
             }}
           >
-            STOP REMINDER
+            STOP ALARM
           </button>
         </div>
       )}

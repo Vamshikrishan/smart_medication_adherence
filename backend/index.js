@@ -7,7 +7,9 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const PORT = 5000;
 
-// Middleware
+/* ======================
+   Middleware
+====================== */
 app.use(
   cors({
     origin: "*",
@@ -15,47 +17,80 @@ app.use(
     allowedHeaders: ["Content-Type"],
   })
 );
+
 app.use(express.json());
 
-/* =======================
-   MongoDB Schema & Model
-   ======================= */
+/* ======================
+   MongoDB Schema
+====================== */
+
+const MedicineSchema = new mongoose.Schema({
+  name: String,
+  reminderTime: String, // "14:01"
+  duration: Number, // days
+  startDate: String,
+  endDate: String,
+});
+
 const PrescriptionSchema = new mongoose.Schema({
   prescriptionId: String,
   patientName: String,
   mobile: String,
-  medicines: Array,
+  medicines: [MedicineSchema],
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-const Prescription = mongoose.model("Prescription", PrescriptionSchema);
+const Prescription = mongoose.model(
+  "Prescription",
+  PrescriptionSchema
+);
 
-/* =======================
+/* ======================
    Routes
-   ======================= */
+====================== */
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+/* ======================
+   CREATE PRESCRIPTION
+====================== */
+
 app.post("/api/prescriptions", async (req, res) => {
   try {
     const { patientName, mobile, medicines } = req.body;
+
     const prescriptionId = uuidv4();
 
-    // Save data to MongoDB
+    const today = new Date();
+
+    const processedMedicines = medicines.map((med) => {
+      const start = new Date(today);
+      const end = new Date(today);
+      end.setDate(end.getDate() + Number(med.duration));
+
+      return {
+        name: med.name,
+        reminderTime: med.reminderTime,
+        duration: med.duration,
+        startDate: start.toISOString().split("T")[0],
+        endDate: end.toISOString().split("T")[0],
+      };
+    });
+
     const prescription = new Prescription({
       prescriptionId,
       patientName,
       mobile,
-      medicines,
+      medicines: processedMedicines,
     });
 
     await prescription.save();
 
-    // Generate QR code
     const qrCode = await QRCode.toDataURL(prescriptionId);
 
     res.json({
@@ -65,9 +100,15 @@ app.post("/api/prescriptions", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create prescription" });
+    res.status(500).json({
+      error: "Failed to create prescription",
+    });
   }
 });
+
+/* ======================
+   GET PRESCRIPTION
+====================== */
 
 app.get("/api/prescriptions/:id", async (req, res) => {
   try {
@@ -76,18 +117,23 @@ app.get("/api/prescriptions/:id", async (req, res) => {
     });
 
     if (!prescription) {
-      return res.status(404).json({ error: "Prescription not found" });
+      return res.status(404).json({
+        error: "Prescription not found",
+      });
     }
 
     res.json(prescription);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch prescription" });
+    res.status(500).json({
+      error: "Failed to fetch prescription",
+    });
   }
 });
 
-/* =======================
-   Start Server After DB
-   ======================= */
+/* ======================
+   START SERVER
+====================== */
+
 async function startServer() {
   try {
     console.log("⏳ Connecting to MongoDB...");
@@ -105,7 +151,7 @@ async function startServer() {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("❌ MongoDB connection failed:");
+    console.error("❌ MongoDB connection failed");
     console.error(error.message);
     process.exit(1);
   }

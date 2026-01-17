@@ -8,8 +8,7 @@ function Pharmacy() {
   const [medicines, setMedicines] = useState([
     {
       name: "",
-      time: "09:00",
-      ampm: "AM",
+      reminderTime: "09:00", // ✅ 24-hour time
       duration: "",
     },
   ]);
@@ -18,12 +17,6 @@ function Pharmacy() {
      GENERATE BILL
      =============================== */
   const handleGenerateBill = async () => {
-    const formattedMedicines = medicines.map((med) => ({
-      name: med.name,
-      time: `${med.time} ${med.ampm}`, // ✅ FINAL TIME FORMAT
-      duration: med.duration,
-    }));
-
     const response = await fetch(
       "https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions",
       {
@@ -34,7 +27,7 @@ function Pharmacy() {
         body: JSON.stringify({
           patientName,
           mobile,
-          medicines: formattedMedicines,
+          medicines,
         }),
       }
     );
@@ -99,29 +92,16 @@ function Pharmacy() {
             }}
           />
 
-          {/* ⏰ TIME */}
+          {/* ⏰ EXACT REMINDER TIME */}
           <input
             type="time"
-            value={med.time}
+            value={med.reminderTime}
             onChange={(e) => {
               const updated = [...medicines];
-              updated[index].time = e.target.value;
+              updated[index].reminderTime = e.target.value;
               setMedicines(updated);
             }}
           />
-
-          {/* AM / PM */}
-          <select
-            value={med.ampm}
-            onChange={(e) => {
-              const updated = [...medicines];
-              updated[index].ampm = e.target.value;
-              setMedicines(updated);
-            }}
-          >
-            <option>AM</option>
-            <option>PM</option>
-          </select>
 
           {/* DAYS */}
           <input
@@ -144,7 +124,7 @@ function Pharmacy() {
         onClick={() =>
           setMedicines([
             ...medicines,
-            { name: "", time: "09:00", ampm: "AM", duration: "" },
+            { name: "", reminderTime: "09:00", duration: "" },
           ])
         }
       >
@@ -165,10 +145,7 @@ function Pharmacy() {
       <br />
       <br />
 
-      <button
-        className="btn btn-success"
-        onClick={handleGenerateBill}
-      >
+      <button className="btn btn-success" onClick={handleGenerateBill}>
         Generate Bill
       </button>
 
