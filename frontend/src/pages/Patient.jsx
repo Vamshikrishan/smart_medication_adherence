@@ -34,44 +34,36 @@ function Patient() {
     speechSynthesis.speak(msg);
   };
 
-  const speakAllLanguages = (medicines, time) => {
-    const medList = medicines.join(", ");
-
-    // English
+  const speakAllLanguages = (medicine, time) => {
     speak(
-      `It is time to take your medicines. ${medList}. Time ${time}`,
+      `It is time to take your medicine ${medicine} at ${time}`,
       "en-IN"
     );
 
-    // Hindi
     speak(
-      `दवा लेने का समय हो गया है। दवाइयाँ हैं ${medList}`,
+      `अब ${medicine} दवा लेने का समय हो गया है`,
       "hi-IN"
     );
 
-    // Telugu (works if voice exists in browser)
     speak(
-      `ఇప్పుడు మందులు తీసుకునే సమయం వచ్చింది. మందులు: ${medList}`,
+      `ఇప్పుడు ${medicine} మందు తీసుకునే సమయం వచ్చింది`,
       "te-IN"
     );
   };
 
   /* ===============================
-     START ALARM (REPEAT)
+     START ALARM
   =============================== */
-  const startAlarm = (medicineNames, time) => {
+  const startAlarm = (medicine, time) => {
     if (alarmInterval.current) return;
 
-    setActiveAlert({
-      medicines: medicineNames,
-      time,
-    });
+    setActiveAlert({ medicine, time });
 
-    speakAllLanguages(medicineNames, time);
+    speakAllLanguages(medicine, time);
 
     alarmInterval.current = setInterval(() => {
-      speakAllLanguages(medicineNames, time);
-    }, 15000); // every 15 sec
+      speakAllLanguages(medicine, time);
+    }, 15000); // repeat every 15 sec
   };
 
   const stopAlarm = () => {
@@ -84,41 +76,26 @@ function Patient() {
   /* ===============================
      SMART REMINDER ENGINE
   =============================== */
-  const startReminderEngine = (medicines, createdAt) => {
+  const startReminderEngine = (medicines) => {
     engineInterval.current = setInterval(() => {
       const now = new Date();
 
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
+      const currentDate = now.toISOString().split("T")[0];
+      const currentTime =
+        now.getHours().toString().padStart(2, "0") +
+        ":" +
+        now.getMinutes().toString().padStart(2, "0");
 
-      const daysPassed = Math.floor(
-        (now - new Date(createdAt)) / (1000 * 60 * 60 * 24)
-      );
-
-      const medicinesNow = medicines.filter((med) => {
-        const [time, ampm] = med.time.split(" ");
-        let [hour, minute] = time.split(":");
-
-        hour = parseInt(hour);
-        minute = parseInt(minute);
-
-        if (ampm === "PM" && hour !== 12) hour += 12;
-        if (ampm === "AM" && hour === 12) hour = 0;
-
-        return (
-          daysPassed < med.duration &&
-          hour === currentHour &&
-          minute === currentMinute
-        );
+      medicines.forEach((med) => {
+        if (
+          currentDate >= med.startDate &&
+          currentDate <= med.endDate &&
+          currentTime === med.reminderTime
+        ) {
+          startAlarm(med.name, med.reminderTime);
+        }
       });
-
-      if (medicinesNow.length > 0) {
-        startAlarm(
-          medicinesNow.map((m) => m.name),
-          medicinesNow[0].time
-        );
-      }
-    }, 30000); // check every 30 sec
+    }, 30000); // every 30 sec
   };
 
   /* ===============================
@@ -139,11 +116,7 @@ function Patient() {
         await qr.clear();
 
         const data = await fetchPrescription(decodedText);
-
-        startReminderEngine(
-          data.medicines,
-          data.createdAt
-        );
+        startReminderEngine(data.medicines);
       }
     );
 
@@ -168,7 +141,8 @@ function Patient() {
           <h3>Medicines</h3>
           {prescription.medicines.map((m, i) => (
             <p key={i}>
-              <b>{m.name}</b> — {m.time} — {m.duration} days
+              <b>{m.name}</b> — {m.reminderTime} —{" "}
+              {m.duration} days
             </p>
           ))}
         </>
@@ -178,31 +152,29 @@ function Patient() {
       {activeAlert && (
         <div
           style={{
-            background: "#ffd6d6",
-            padding: 30,
-            marginTop: 40,
-            borderRadius: 15,
+            background: "#ffcccc",
+            padding: 25,
+            marginTop: 30,
+            borderRadius: 12,
           }}
         >
           <h2>💊 MEDICATION ALERT</h2>
 
-          <p><b>Time:</b> {activeAlert.time}</p>
+          <h3>
+            Take <b>{activeAlert.medicine}</b>
+          </h3>
 
-          <ul style={{ fontSize: 20 }}>
-            {activeAlert.medicines.map((med, i) => (
-              <li key={i}>{med}</li>
-            ))}
-          </ul>
+          <h3>Time: {activeAlert.time}</h3>
 
           <button
             onClick={stopAlarm}
             style={{
-              padding: 14,
+              padding: 12,
               fontSize: 18,
               background: "red",
               color: "white",
               border: "none",
-              borderRadius: 8,
+              borderRadius: 6,
               marginTop: 15,
             }}
           >
