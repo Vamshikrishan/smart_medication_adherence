@@ -1,18 +1,29 @@
 import { useState } from "react";
 
 function Pharmacy() {
-  // Patient state
   const [patientName, setPatientName] = useState("");
   const [mobile, setMobile] = useState("");
   const [qrCode, setQrCode] = useState("");
 
-  // Medicines state
   const [medicines, setMedicines] = useState([
-    { name: "", time: "Morning", timesPerDay: 1, duration: "" },
+    {
+      name: "",
+      time: "09:00",
+      ampm: "AM",
+      duration: "",
+    },
   ]);
 
-  // ✅ Generate Bill handler
+  /* ===============================
+     GENERATE BILL
+     =============================== */
   const handleGenerateBill = async () => {
+    const formattedMedicines = medicines.map((med) => ({
+      name: med.name,
+      time: `${med.time} ${med.ampm}`, // ✅ FINAL TIME FORMAT
+      duration: med.duration,
+    }));
+
     const response = await fetch(
       "https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions",
       {
@@ -23,22 +34,19 @@ function Pharmacy() {
         body: JSON.stringify({
           patientName,
           mobile,
-          medicines,
+          medicines: formattedMedicines,
         }),
       }
     );
 
     const data = await response.json();
-    console.log(data);
 
     alert("Prescription ID: " + data.prescriptionId);
-
-    // 🔥 THIS WAS MISSING
     setQrCode(data.qrCode);
   };
 
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial", textAlign: "center" }}>
+    <div style={{ padding: 30, textAlign: "center", fontFamily: "Arial" }}>
       <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
@@ -46,36 +54,39 @@ function Pharmacy() {
 
       <h2>Pharmacy Portal</h2>
 
-      <h3>Patient Details</h3>
+      {/* ================= PATIENT ================= */}
+      <h4>Patient Details</h4>
+
       <input
-        type="text"
         placeholder="Patient Name"
         value={patientName}
         onChange={(e) => setPatientName(e.target.value)}
-        style={{ display: "block", margin: "0 auto 10px", width: "300px" }}
+        style={{ width: 300, marginBottom: 10 }}
       />
 
+      <br />
+
       <input
-        type="number"
         placeholder="Mobile Number"
         value={mobile}
         onChange={(e) => setMobile(e.target.value)}
-        style={{ display: "block", margin: "0 auto 20px", width: "300px" }}
+        style={{ width: 300, marginBottom: 25 }}
       />
 
-      <h3>Medicines</h3>
+      {/* ================= MEDICINES ================= */}
+      <h4>Medicines</h4>
 
       {medicines.map((med, index) => (
         <div
           key={index}
           style={{
             border: "1px solid #ccc",
-            padding: "15px",
-            margin: "0 auto 15px",
-            width: "600px",
+            padding: 15,
+            width: 650,
+            margin: "10px auto",
             display: "flex",
+            gap: 10,
             justifyContent: "center",
-            gap: "10px",
           }}
         >
           <input
@@ -88,31 +99,31 @@ function Pharmacy() {
             }}
           />
 
-          <select
+          {/* ⏰ TIME */}
+          <input
+            type="time"
             value={med.time}
             onChange={(e) => {
               const updated = [...medicines];
               updated[index].time = e.target.value;
               setMedicines(updated);
             }}
-          >
-            <option>Morning</option>
-            <option>Afternoon</option>
-            <option>Night</option>
-          </select>
-
-          <input
-            type="number"
-            placeholder="Times/day"
-            value={med.timesPerDay}
-            onChange={(e) => {
-              const updated = [...medicines];
-              updated[index].timesPerDay = e.target.value;
-              setMedicines(updated);
-            }}
-            style={{ width: "80px" }}
           />
 
+          {/* AM / PM */}
+          <select
+            value={med.ampm}
+            onChange={(e) => {
+              const updated = [...medicines];
+              updated[index].ampm = e.target.value;
+              setMedicines(updated);
+            }}
+          >
+            <option>AM</option>
+            <option>PM</option>
+          </select>
+
+          {/* DAYS */}
           <input
             type="number"
             placeholder="Days"
@@ -122,34 +133,31 @@ function Pharmacy() {
               updated[index].duration = e.target.value;
               setMedicines(updated);
             }}
-            style={{ width: "80px" }}
+            style={{ width: 80 }}
           />
         </div>
       ))}
 
+      {/* ================= BUTTONS ================= */}
       <button
-        type="button"
         className="btn btn-primary"
         onClick={() =>
           setMedicines([
             ...medicines,
-            { name: "", time: "Morning", timesPerDay: 1, duration: "" },
+            { name: "", time: "09:00", ampm: "AM", duration: "" },
           ])
         }
-        style={{ marginRight: "10px" }}
       >
         + Add Medicine
       </button>
 
       <button
-        type="button"
-        className="btn btn-primary"
+        className="btn btn-danger"
+        style={{ marginLeft: 10 }}
         onClick={() => {
-          if (medicines.length > 1) {
+          if (medicines.length > 1)
             setMedicines(medicines.slice(0, -1));
-          }
         }}
-        style={{ marginRight: "10px" }}
       >
         − Remove Last
       </button>
@@ -158,18 +166,17 @@ function Pharmacy() {
       <br />
 
       <button
-        type="button"
         className="btn btn-success"
         onClick={handleGenerateBill}
       >
         Generate Bill
       </button>
 
-      {/* ✅ QR CODE DISPLAY */}
+      {/* ================= QR CODE ================= */}
       {qrCode && (
-        <div style={{ marginTop: "25px" }}>
+        <div style={{ marginTop: 30 }}>
           <h4>Scan this QR Code</h4>
-          <img src={qrCode} alt="Prescription QR" />
+          <img src={qrCode} alt="QR Code" />
         </div>
       )}
     </div>
