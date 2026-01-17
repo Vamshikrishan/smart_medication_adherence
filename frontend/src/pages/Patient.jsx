@@ -11,6 +11,15 @@ function Patient() {
   const engineInterval = useRef(null);
 
   /* ===============================
+     LOAD AVAILABLE VOICES
+  =============================== */
+  useEffect(() => {
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+  }, []);
+
+  /* ===============================
      FETCH PRESCRIPTION
   =============================== */
   const fetchPrescription = async (id) => {
@@ -24,14 +33,28 @@ function Patient() {
   };
 
   /* ===============================
-     VOICE ENGINE
+     VOICE ENGINE (FIXED)
   =============================== */
-  const speak = (text, lang) => {
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = lang;
-    msg.rate = 0.9;
-    msg.volume = 1;
-    speechSynthesis.speak(msg);
+  const speak = (text, langCode) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    const voices = window.speechSynthesis.getVoices();
+
+    const selectedVoice = voices.find(
+      (v) =>
+        v.lang === langCode ||
+        v.lang.startsWith(langCode.split("-")[0])
+    );
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    utterance.lang = langCode;
+    utterance.rate = 0.9;
+    utterance.volume = 1;
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const speakAllLanguages = (medicine, time) => {
@@ -41,13 +64,13 @@ function Patient() {
     );
 
     speak(
-      `अब ${medicine} दवा लेने का समय हो गया है`,
+      `अब ${medicine} दवा लेने का समय हो गया है ${time}`,
       "hi-IN"
     );
 
     speak(
-      `ఇప్పుడు ${medicine} మందు తీసుకునే సమయం వచ్చింది`,
-      "te-IN"
+      `Ippudu mee mandu teesukune samayam ${time} vachindi.Dayachesi ${medicine} mandu teesukondi.`,
+      "en-IN"
     );
   };
 
@@ -63,18 +86,18 @@ function Patient() {
 
     alarmInterval.current = setInterval(() => {
       speakAllLanguages(medicine, time);
-    }, 15000); // repeat every 15 sec
+    }, 15000);
   };
 
   const stopAlarm = () => {
     clearInterval(alarmInterval.current);
     alarmInterval.current = null;
-    speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
     setActiveAlert(null);
   };
 
   /* ===============================
-     SMART REMINDER ENGINE
+     REMINDER ENGINE
   =============================== */
   const startReminderEngine = (medicines) => {
     engineInterval.current = setInterval(() => {
@@ -95,7 +118,7 @@ function Patient() {
           startAlarm(med.name, med.reminderTime);
         }
       });
-    }, 30000); // every 30 sec
+    }, 30000);
   };
 
   /* ===============================
@@ -141,8 +164,7 @@ function Patient() {
           <h3>Medicines</h3>
           {prescription.medicines.map((m, i) => (
             <p key={i}>
-              <b>{m.name}</b> — {m.reminderTime} —{" "}
-              {m.duration} days
+              <b>{m.name}</b> — {m.reminderTime} — {m.duration} days
             </p>
           ))}
         </>
