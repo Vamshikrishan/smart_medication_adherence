@@ -52,7 +52,7 @@
   border-radius: 14px;
   border: 1px solid #bfc8ff;
   font-size: 16px;
-  width: 220px;
+  width: 250px;
   transition: 0.3s;
 }
 
@@ -129,4 +129,137 @@
   background: white;
   padding: 12px;
   border-radius: 12px;
+}
+/* Mobile Responsive View */
+@media (max-width: 768px) {
+  .pharmacy-wrapper {
+    padding: 20px;
+    min-height: auto;
+  }
+
+  .pharmacy-card {
+    max-width: 100%;
+    padding: 30px 20px;
+    border-radius: 20px;
+  }
+
+  .title {
+    margin-bottom: 20px;
+  }
+
+  .title h1 {
+    font-size: 28px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    margin: 20px 0 15px 0;
+  }
+
+  .patient-row,
+  .medicine-row {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .input {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .button-row {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .btn:hover {
+    transform: scale(1.03);
+  }
+
+  .big {
+    font-size: 16px;
+    padding: 12px 30px;
+  }
+
+  .generate-wrapper {
+    margin-top: 20px;
+  }
+
+  .qr-box {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .qr-box img {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+  }
+}
+
+@media (max-width: 480px) {
+  .pharmacy-wrapper {
+    padding: 15px;
+  }
+
+  .pharmacy-card {
+    padding: 20px 15px;
+    border-radius: 15px;
+  }
+
+  .title h1 {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    margin: 15px 0 12px 0;
+  }
+
+  .input {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .btn:hover {
+    transform: scale(1.02);
+  }
+
+  .big {
+    font-size: 14px;
+    padding: 10px 24px;
+  }
+
+  .qr-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .qr-box img {
+    margin-top: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 85%;
+  }
 }
