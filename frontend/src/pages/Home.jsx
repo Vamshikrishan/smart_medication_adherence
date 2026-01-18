@@ -11,11 +11,23 @@ function Home() {
         </h1>
 
         <div className="landing-buttons">
-          <button className="btn btn-primary landing-btn" onClick={() => navigate("/pharmacy")}>
+          <button 
+            className="btn btn-primary landing-btn" 
+            onClick={() => navigate("/pharmacy")}
+            style={{color: "#1d4ed8"}}
+            onMouseEnter={(e) => e.target.style.color = "white"}
+            onMouseLeave={(e) => e.target.style.color = "#1d4ed8"}
+          >
             Pharmacy
           </button>
 
-          <button className="btn btn-primary landing-btn" onClick={() => navigate("/patient")}>
+          <button 
+            className="btn btn-primary landing-btn" 
+            onClick={() => navigate("/patient")}
+            style={{color: "#1d4ed8"}}
+            onMouseEnter={(e) => e.target.style.color = "white"}
+            onMouseLeave={(e) => e.target.style.color = "#1d4ed8"}
+          >
             Patient
           </button>
         </div>

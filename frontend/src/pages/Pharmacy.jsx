@@ -1,5 +1,5 @@
-import { useState } from "react";
-import styles from "/workspaces/smart_medication_adherence/frontend/src/styles/Pharmacy.module.css";
+import { useState, useEffect } from "react";
+import "/workspaces/smart_medication_adherence/frontend/src/styles/Pharmacy.css";
 
 function Pharmacy() {
   const [patientName, setPatientName] = useState("");
@@ -10,48 +10,86 @@ function Pharmacy() {
     { name: "", reminderTime: "09:00", duration: "" },
   ]);
 
+  /* ===============================
+     GENERATE BILL
+  =============================== */
   const handleGenerateBill = async () => {
     const response = await fetch(
       "https://super-fishstick-7vp6w55xjrx3r6r9-5000.app.github.dev/api/prescriptions",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientName, mobile, medicines }),
+        body: JSON.stringify({
+          patientName,
+          mobile,
+          medicines,
+        }),
       }
     );
 
     const data = await response.json();
-    alert("Prescription ID: " + data.prescriptionId);
     setQrCode(data.qrCode);
+
+    // auto scroll to QR
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 300);
+  };
+
+  /* ===============================
+     ADD MEDICINE
+  =============================== */
+  const addMedicine = () => {
+    setMedicines([
+      ...medicines,
+      { name: "", reminderTime: "09:00", duration: "" },
+    ]);
+  };
+
+  /* ===============================
+     REMOVE MEDICINE
+  =============================== */
+  const removeMedicine = () => {
+    if (medicines.length > 1) {
+      setMedicines(medicines.slice(0, -1));
+    }
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>💊 Pharmacy Portal</h1>
+    <div className="pharmacy-wrapper">
+      <div className="pharmacy-card">
 
-        <h3 className={styles.section}>Patient Details</h3>
+        <h1 className="title">💊 Pharmacy Portal</h1>
 
-        <input
-          className={styles.input}
-          placeholder="Patient Name"
-          value={patientName}
-          onChange={(e) => setPatientName(e.target.value)}
-        />
+        {/* ================= PATIENT ================= */}
+        <h3 className="section-title">Patient Details</h3>
 
-        <input
-          className={styles.input}
-          placeholder="Mobile Number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-        />
+        <div className="patient-row">
+          <input
+            className="input"
+            placeholder="Patient Name"
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+          />
 
-        <h3 className={styles.section}>Medicines</h3>
+          <input
+            className="input"
+            placeholder="Mobile Number"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+        </div>
+
+        {/* ================= MEDICINES ================= */}
+        <h3 className="section-title">Medicines</h3>
 
         {medicines.map((med, index) => (
-          <div key={index} className={styles.medicineRow}>
+          <div className="medicine-row" key={index}>
             <input
-              className={styles.input}
+              className="input"
               placeholder="Medicine Name"
               value={med.name}
               onChange={(e) => {
@@ -63,7 +101,7 @@ function Pharmacy() {
 
             <input
               type="time"
-              className={styles.input}
+              className="input time-input"
               value={med.reminderTime}
               onChange={(e) => {
                 const m = [...medicines];
@@ -73,9 +111,9 @@ function Pharmacy() {
             />
 
             <input
+              className="input"
               type="number"
               placeholder="Days"
-              className={styles.input}
               value={med.duration}
               onChange={(e) => {
                 const m = [...medicines];
@@ -86,41 +124,28 @@ function Pharmacy() {
           </div>
         ))}
 
-        <div className={styles.btnRow}>
-          <button
-            className={`${styles.btn} ${styles.add}`}
-            onClick={() =>
-              setMedicines([
-                ...medicines,
-                { name: "", reminderTime: "09:00", duration: "" },
-              ])
-            }
-          >
+        {/* ================= BUTTONS ================= */}
+        <div className="button-row">
+          <button className="btn blue" onClick={addMedicine}>
             + Add Medicine
           </button>
 
-          <button
-            className={`${styles.btn} ${styles.remove}`}
-            onClick={() =>
-              medicines.length > 1 &&
-              setMedicines(medicines.slice(0, -1))
-            }
-          >
+          <button className="btn red" onClick={removeMedicine}>
             − Remove Last
           </button>
         </div>
 
-        <button
-          className={`${styles.btn} ${styles.generate}`}
-          onClick={handleGenerateBill}
-        >
-          Generate Bill
-        </button>
+        <div className="generate-wrapper">
+          <button className="btn green big" onClick={handleGenerateBill}>
+            Generate Bill
+          </button>
+        </div>
 
+        {/* ================= QR ================= */}
         {qrCode && (
-          <div className={styles.qrBox}>
-            <h3>Prescription Generated</h3>
-            <img src={qrCode} alt="QR" />
+          <div className="qr-box">
+            <h3>✅ Prescription Generated</h3>
+            <img src={qrCode} alt="QR Code" />
           </div>
         )}
       </div>
