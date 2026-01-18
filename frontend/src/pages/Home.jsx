@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import "/workspaces/smart_medication_adherence/frontend/src/styles/main.css";
 
 function Home() {
   const navigate = useNavigate();
