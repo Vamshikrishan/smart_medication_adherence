@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
+import "/workspaces/smart_medication_adherence/frontend/src/styles/Patient.css";
 
 function Patient() {
   const [prescription, setPrescription] = useState(null);
@@ -8,16 +9,19 @@ function Patient() {
   const qrRef = useRef(null);
   const scanOnce = useRef(false);
   const alarmInterval = useRef(null);
-  const engineInterval = useRef(null);
 
   /* ===============================
-     LOAD AVAILABLE VOICES
+     TIME CONVERTER (24 → 12)
   =============================== */
-  useEffect(() => {
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
-  }, []);
+  const convertTo12Hour = (time24) => {
+    let [hour, minute] = time24.split(":");
+    hour = parseInt(hour);
+
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+
+    return `${hour}:${minute} ${ampm}`;
+  };
 
   /* ===============================
      FETCH PRESCRIPTION
@@ -33,28 +37,13 @@ function Patient() {
   };
 
   /* ===============================
-     VOICE ENGINE (FIXED)
+     VOICE ENGINE
   =============================== */
-  const speak = (text, langCode) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    const voices = window.speechSynthesis.getVoices();
-
-    const selectedVoice = voices.find(
-      (v) =>
-        v.lang === langCode ||
-        v.lang.startsWith(langCode.split("-")[0])
-    );
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
-
-    utterance.lang = langCode;
-    utterance.rate = 0.9;
-    utterance.volume = 1;
-
-    window.speechSynthesis.speak(utterance);
+  const speak = (text, lang) => {
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = 0.9;
+    speechSynthesis.speak(msg);
   };
 
   const speakAllLanguages = (medicine, time) => {
@@ -92,7 +81,7 @@ function Patient() {
   const stopAlarm = () => {
     clearInterval(alarmInterval.current);
     alarmInterval.current = null;
-    window.speechSynthesis.cancel();
+    speechSynthesis.cancel();
     setActiveAlert(null);
   };
 
@@ -100,22 +89,16 @@ function Patient() {
      REMINDER ENGINE
   =============================== */
   const startReminderEngine = (medicines) => {
-    engineInterval.current = setInterval(() => {
+    setInterval(() => {
       const now = new Date();
-
-      const currentDate = now.toISOString().split("T")[0];
       const currentTime =
         now.getHours().toString().padStart(2, "0") +
         ":" +
         now.getMinutes().toString().padStart(2, "0");
 
       medicines.forEach((med) => {
-        if (
-          currentDate >= med.startDate &&
-          currentDate <= med.endDate &&
-          currentTime === med.reminderTime
-        ) {
-          startAlarm(med.name, med.reminderTime);
+        if (currentTime === med.reminderTime) {
+          startAlarm(med.name, convertTo12Hour(med.reminderTime));
         }
       });
     }, 30000);
@@ -133,7 +116,7 @@ function Patient() {
 
     qr.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
+      { fps: 10, qrbox: 260 },
       async (decodedText) => {
         await qr.stop();
         await qr.clear();
@@ -142,68 +125,49 @@ function Patient() {
         startReminderEngine(data.medicines);
       }
     );
-
-    return () => {
-      if (engineInterval.current)
-        clearInterval(engineInterval.current);
-    };
   }, []);
 
   /* ===============================
      UI
   =============================== */
   return (
-    <div style={{ padding: 30, textAlign: "center" }}>
-      <h2>Patient Portal</h2>
-      <p>Scan QR provided by pharmacy</p>
+    <div className="patient-wrapper">
+      <div className="patient-card">
 
-      <div id="qr-reader" style={{ width: 300, margin: "auto" }} />
+        <h1 className="title">🧑‍⚕️ Patient Portal</h1>
+        <p className="subtitle">Scan QR provided by pharmacy</p>
 
-      {prescription && (
-        <>
-          <h3>Medicines</h3>
-          {prescription.medicines.map((m, i) => (
-            <p key={i}>
-              <b>{m.name}</b> — {m.reminderTime} — {m.duration} days
-            </p>
-          ))}
-        </>
-      )}
+        <div id="qr-reader" className="scanner-box" />
 
-      {/* 🔔 ALERT PANEL */}
-      {activeAlert && (
-        <div
-          style={{
-            background: "#ffcccc",
-            padding: 25,
-            marginTop: 30,
-            borderRadius: 12,
-          }}
-        >
-          <h2>💊 MEDICATION ALERT</h2>
+        {prescription && (
+          <>
+            <h2 className="section">Medicines</h2>
 
-          <h3>
-            Take <b>{activeAlert.medicine}</b>
-          </h3>
+            <div className="medicine-list">
+              {prescription.medicines.map((m, i) => (
+                <div className="medicine-card" key={i}>
+                  <h3>{m.name}</h3>
+                  <p>
+                    ⏰ {convertTo12Hour(m.reminderTime)} <br />
+                    📅 {m.duration} days
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
-          <h3>Time: {activeAlert.time}</h3>
+        {/* ALERT */}
+        {activeAlert && (
+          <div className="alert-box">
+            <h2>💊 MEDICATION ALERT</h2>
+            <h3>{activeAlert.medicine}</h3>
+            <p>Time: {activeAlert.time}</p>
 
-          <button
-            onClick={stopAlarm}
-            style={{
-              padding: 12,
-              fontSize: 18,
-              background: "red",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              marginTop: 15,
-            }}
-          >
-            STOP ALARM
-          </button>
-        </div>
-      )}
+            <button onClick={stopAlarm}>STOP ALARM</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
