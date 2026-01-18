@@ -117,3 +117,66 @@ select:focus {
   border-radius: 16px;
   padding: 25px;
 }
+
+/* ===============================
+   Landing Page Animation
+=============================== */
+
+.landing-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  animation: bgShift 10s infinite alternate;
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.landing-content {
+  animation: fadeIn 1.5s ease-in-out;
+  max-width: 700px;
+  padding: 20px;
+}
+
+.landing-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.landing-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.landing-btn {
+  font-size: 18px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  color: #2563eb;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  transition: transform 0.2s, background 0.3s, color 0.3s;
+}
+
+.landing-btn:hover {
+  transform: translateY(-4px);
+  background: #2563eb;
+  color: white;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
