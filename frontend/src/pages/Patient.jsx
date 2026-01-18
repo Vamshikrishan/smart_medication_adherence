@@ -134,7 +134,7 @@ function Patient() {
     <div className="patient-wrapper">
       <div className="patient-card">
 
-        <h1 className="title">🧑‍⚕️ Patient Portal</h1>
+        <h1 className="title">🙍‍♂️ Patient Portal</h1>
         <p className="subtitle">Scan QR provided by pharmacy</p>
 
         <div id="qr-reader" className="scanner-box" />
