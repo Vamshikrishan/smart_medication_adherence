@@ -1,0 +1,119 @@
+/* ------------------------------
+   Global styles
+--------------------------------*/
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* ------------------------------
+   Layout
+--------------------------------*/
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+/* ------------------------------
+   Headings
+--------------------------------*/
+
+h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+h3 {
+  margin: 15px 0;
+  font-weight: 500;
+}
+
+/* ------------------------------
+   Buttons
+--------------------------------*/
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-success {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+/* ------------------------------
+   Cards
+--------------------------------*/
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+/* ------------------------------
+   Inputs
+--------------------------------*/
+
+input,
+select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #2563eb;
+}
+
+/* ------------------------------
+   Alert animation
+--------------------------------*/
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.alert-box {
+  animation: pulse 1.5s infinite;
+  background: #fee2e2;
+  border-radius: 16px;
+  padding: 25px;
+}
