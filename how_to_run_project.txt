@@ -1,9 +1,0 @@
-1. open a new termineal
-2. cd backend
-3. node index.js
-4. this will start the backend. and when you run the above comand it will show a success message. if it not fix the errors and then try it again
-5. open a new termineal
-6. cd frontend
-7. npm run dev
-8. this will start the frontend then you will get the output.
-9. dont's forgot to make the backend port url public. then only the server will connect
